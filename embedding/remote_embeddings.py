@@ -4,7 +4,7 @@ from typing import List
 from langchain_core.embeddings import Embeddings
 from langserve import RemoteRunnable
 
-logging.getLogger('httpx').setLevel(logging.CRITICAL)
+logging.getLogger("httpx").setLevel(logging.CRITICAL)
 
 
 class RemoteRunnableEmbed(RemoteRunnable):

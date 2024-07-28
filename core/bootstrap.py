@@ -1,9 +1,8 @@
+import uvicorn
+from core.server_settings import server_settings
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
-import uvicorn
-from langserve import add_routes
-from core.server_settings import server_settings
 
 
 class Bootstrap:
