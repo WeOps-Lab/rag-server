@@ -13,12 +13,12 @@ repos:
     hooks:
       - id: black
         language_version: python3.10
-        args: [ --config=munchkin/pre-commit-config.toml ]
+        args: [ --config=pre-commit-config.toml ]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v2.1.0
     hooks:
       - id: flake8
-        args: [ --config=munchkin/.flake8 ]
+        args: [ --config=.flake8 ]
   - repo: https://github.com/pre-commit/mirrors-isort
     rev: v5.5.2
     hooks:
