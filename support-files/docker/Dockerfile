@@ -20,9 +20,9 @@ ADD server.py ./server.py
 ADD support-files ./support-files
 
 # 应用加密
-RUN python3 support-files/tools/py2so.py -i server.py -d dist -v 3 -c server.py &&\
-    mv ./dist /tmp/dist &&\
-    rm -rf /app/* &&\
-    mv /tmp/dist/* /app/
+#RUN python3 support-files/tools/py2so.py -i server.py -d dist -v 3 -c server.py &&\
+#    mv ./dist /tmp/dist &&\
+#    rm -rf /app/* &&\
+#    mv /tmp/dist/* /app/
 
 CMD ["supervisord", "-n"]
