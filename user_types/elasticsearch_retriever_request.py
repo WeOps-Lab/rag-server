@@ -6,6 +6,7 @@ class ElasticSearchRetrieverRequest(ElasticSearchRequest):
     search_query: str
     text_search_weight: float = 0.9
     rag_k: int = 10
+    size: int = 10
     rag_num_candidates: int = 1000
     vector_search_weight: float = 0.1
     metadata_filter: dict = {}

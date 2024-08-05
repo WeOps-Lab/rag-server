@@ -19,7 +19,7 @@ def vector_query(
     es_query = {
         "query": {
             "bool": {
-                "must": {"term": {"text": req.search_query}},
+                "must": {"match": {"text": req.search_query}},
                 "filter": [],
                 "boost": req.text_search_weight,
             }
@@ -32,6 +32,7 @@ def vector_query(
             "num_candidates": req.rag_num_candidates,
             "boost": req.vector_search_weight,
         },
+        "size": req.size,
     }
     for key, value in req.metadata_filter.items():
         es_query["query"]["bool"]["filter"].append({"term": {f"metadata.{key}": value}})
