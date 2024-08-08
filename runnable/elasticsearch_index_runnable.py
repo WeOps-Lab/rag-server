@@ -1,6 +1,7 @@
 from langchain_core.runnables import RunnableLambda
 from langchain_elasticsearch import ElasticsearchStore
 
+from core.server_settings import server_settings
 from embedding.remote_embeddings import RemoteEmbeddings
 from user_types.elasticsearch_store_request import ElasticSearchStoreRequest
 import elasticsearch
@@ -12,8 +13,8 @@ class ElasticSearchIndexRunnable:
         pass
 
     def elasticsearch_index_func(self, req: ElasticSearchStoreRequest) -> bool:
-        es = elasticsearch.Elasticsearch(hosts=[req.elasticsearch_url],
-                                         basic_auth=("elastic", req.elasticsearch_password))
+        es = elasticsearch.Elasticsearch(hosts=[server_settings.elasticsearch_url],
+                                         basic_auth=("elastic", server_settings.elasticsearch_password))
         embedding_service = RemoteEmbeddings(req.embed_model_address)
         if req.index_mode == 'overwrite' and es.indices.exists(index=req.index_name):
             logger.info(f"删除已存在的索引: {req.index_name}")

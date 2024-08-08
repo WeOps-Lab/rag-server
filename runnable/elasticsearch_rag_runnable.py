@@ -5,6 +5,7 @@ from langchain_core.runnables import RunnableLambda
 from langchain_elasticsearch import ElasticsearchRetriever
 from langserve import RemoteRunnable
 
+from core.server_settings import server_settings
 from embedding.remote_embeddings import RemoteEmbeddings
 from user_types.elasticsearch_retriever_request import ElasticSearchRetrieverRequest
 
@@ -50,9 +51,9 @@ class ElasticSearchRagRunnable:
             index_name=req.index_name,
             body_func=lambda x: vector_query(x, req),
             content_field="text",
-            url=req.elasticsearch_url,
+            url=server_settings.elasticsearch_url,
             username="elastic",
-            password=req.elasticsearch_password,
+            password=server_settings.elasticsearch_password,
         )
         if req.enable_rerank is False:
             result = vector_retriever.invoke(req.search_query)
