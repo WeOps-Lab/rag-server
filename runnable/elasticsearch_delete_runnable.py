@@ -10,17 +10,27 @@ class ElasticSearchDeleteRunnable:
     def __init__(self):
         pass
 
-    def elasticsearch_delete_func(self, req: ElasticSearchDeleteRequest) -> bool:
+    def execute(self, req: ElasticSearchDeleteRequest) -> bool:
         try:
             es = elasticsearch.Elasticsearch(hosts=[server_settings.elasticsearch_url],
                                              basic_auth=("elastic", server_settings.elasticsearch_password))
-            es.indices.delete(index=req.index_name)
+            if req.mode == "delete_index":
+                es.indices.delete(index=req.index_name)
+            elif req.mode == "delete_document_by_knowledge_id":
+                query = {
+                    "query": {
+                        "terms": {
+                            "metadata.knowledge_id": req.delete_knowledge_ids
+                        }
+                    }
+                }
+                es.delete_by_query(index=req.index_name, body=query)
             return True
         except Exception as e:
             logger.error(f"delete index failed: {req.index_name}, {e}")
             return False
 
     def instance(self):
-        elasticsearch_index_runnable = RunnableLambda(self.elasticsearch_delete_func).with_types(
+        elasticsearch_index_runnable = RunnableLambda(self.execute).with_types(
             input_type=ElasticSearchDeleteRequest, output_type=bool)
         return elasticsearch_index_runnable

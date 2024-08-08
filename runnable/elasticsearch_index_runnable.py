@@ -12,7 +12,7 @@ class ElasticSearchIndexRunnable:
     def __init__(self):
         pass
 
-    def elasticsearch_index_func(self, req: ElasticSearchStoreRequest) -> bool:
+    def execute(self, req: ElasticSearchStoreRequest) -> bool:
         es = elasticsearch.Elasticsearch(hosts=[server_settings.elasticsearch_url],
                                          basic_auth=("elastic", server_settings.elasticsearch_password))
         embedding_service = RemoteEmbeddings(req.embed_model_address)
@@ -33,6 +33,6 @@ class ElasticSearchIndexRunnable:
         return True
 
     def instance(self):
-        elasticsearch_index_runnable = RunnableLambda(self.elasticsearch_index_func).with_types(
+        elasticsearch_index_runnable = RunnableLambda(self.execute).with_types(
             input_type=ElasticSearchStoreRequest, output_type=bool)
         return elasticsearch_index_runnable
