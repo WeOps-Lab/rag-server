@@ -9,7 +9,7 @@ from starlette.middleware.cors import CORSMiddleware
 from runnable.elasticsearch_delete_runnable import ElasticSearchDeleteRunnable
 from runnable.elasticsearch_index_runnable import ElasticSearchIndexRunnable
 from runnable.elasticsearch_rag_runnable import ElasticSearchRagRunnable
-from runnable.online_search_runnable import OnlineSearchRagRunnable
+from runnable.network_retrieval_runnable import NetworkRetrievalRunnable
 
 
 class Bootstrap:
@@ -31,7 +31,7 @@ class Bootstrap:
         add_routes(self.app, ElasticSearchIndexRunnable().instance(), path='/elasticsearch_index')
         add_routes(self.app, ElasticSearchDeleteRunnable().instance(), path='/elasticsearch_delete')
         add_routes(self.app, ElasticSearchRagRunnable().instance(), path='/elasticsearch_rag')
-        add_routes(self.app, OnlineSearchRagRunnable().instance(), path='/online_search')
+        add_routes(self.app, NetworkRetrievalRunnable().instance(), path='/network_retrieval')
 
     def start(self):
         self.setup_middlewares()

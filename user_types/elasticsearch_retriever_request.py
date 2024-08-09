@@ -2,6 +2,10 @@ from user_types.elasticsearch_request import ElasticSearchRequest
 
 
 class ElasticSearchRetrieverRequest(ElasticSearchRequest):
+    enable_term_search: bool = True
+    enable_vector_search: bool = True
+    enable_rerank: bool = False
+
     index_name: str
     search_query: str
     text_search_weight: float = 0.9
@@ -10,6 +14,6 @@ class ElasticSearchRetrieverRequest(ElasticSearchRequest):
     rag_num_candidates: int = 1000
     vector_search_weight: float = 0.1
     metadata_filter: dict = {}
-    enable_rerank: bool = False
+
     rerank_model_address: str = ''
     rerank_top_k: int = 5

@@ -4,40 +4,44 @@ from langchain_core.documents import Document
 from langchain_core.runnables import RunnableLambda
 from langchain_elasticsearch import ElasticsearchRetriever
 from langserve import RemoteRunnable
-
 from embedding.remote_embeddings import RemoteEmbeddings
 from user_types.elasticsearch_retriever_request import ElasticSearchRetrieverRequest
-
+from loguru import logger
 
 def vector_query(
         self,
         req: ElasticSearchRetrieverRequest
 ) -> Dict:
-    embedding = RemoteEmbeddings(req.embed_model_address)
-    vector = embedding.embed_query(req.search_query)
-
     es_query = {
-        "query": {
+        "size": req.size,
+    }
+
+    metadata_filter = []
+    for key, value in req.metadata_filter.items():
+        metadata_filter.append({"term": {f"metadata.{key}": value}})
+
+    if req.enable_term_search is True:
+        es_query["query"] = {
             "bool": {
                 "must": {"match": {"text": req.search_query}},
-                "filter": [],
+                "filter": metadata_filter,
                 "boost": req.text_search_weight,
             }
-        },
-        "knn": {
+        }
+
+    if req.enable_vector_search is True:
+        embedding = RemoteEmbeddings(req.embed_model_address)
+        vector = embedding.embed_query(req.search_query)
+        es_query["knn"] = {
             "field": "vector",
             "query_vector": vector,
             "k": req.rag_k,
-            "filter": [],
+            "filter": metadata_filter,
             "num_candidates": req.rag_num_candidates,
             "boost": req.vector_search_weight,
-        },
-        "size": req.size,
-    }
-    for key, value in req.metadata_filter.items():
-        es_query["query"]["bool"]["filter"].append({"term": {f"metadata.{key}": value}})
-    es_query["knn"]["filter"] = es_query["query"]["bool"]["filter"]
+        }
 
+    logger.info(f"ES Query: {es_query}")
     return es_query
 
 
@@ -46,7 +50,7 @@ class ElasticSearchRagRunnable:
         pass
 
     def execute(self, req: ElasticSearchRetrieverRequest) -> List[Document]:
-        vector_retriever = ElasticsearchRetriever.from_es_params(
+        documents_retriever = ElasticsearchRetriever.from_es_params(
             index_name=req.index_name,
             body_func=lambda x: vector_query(x, req),
             content_field="text",
@@ -54,21 +58,18 @@ class ElasticSearchRagRunnable:
             username="elastic",
             password=req.elasticsearch_password,
         )
-        if req.enable_rerank is False:
-            result = vector_retriever.invoke(req.search_query)
-        else:
-            search_result = vector_retriever.invoke(req.search_query)
 
+        search_result = documents_retriever.invoke(req.search_query)
+        if req.enable_rerank is True:
             reranker = RemoteRunnable(req.rerank_model_address)
             params = {
                 "docs": search_result,
                 "query": req.search_query,
                 "top_n": req.rerank_top_k
             }
+            search_result = reranker.invoke(params)
 
-            result = reranker.invoke(params)
-
-        return result
+        return search_result
 
     def instance(self):
         elasticsearch_rag_runnable = RunnableLambda(self.execute).with_types(

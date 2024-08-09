@@ -1,5 +1,5 @@
 from langserve import CustomUserType
 
 
-class OnlineSearchRequest(CustomUserType):
+class NetworkRetrievalRequest(CustomUserType):
     query: str
