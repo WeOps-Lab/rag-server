@@ -18,7 +18,7 @@ def vector_query(
 
     metadata_filter = []
     for key, value in req.metadata_filter.items():
-        metadata_filter.append({"term": {f"metadata.{key}": value}})
+        metadata_filter.append({"term": {f"metadata.{key}.keyword": value}})
 
     if req.enable_term_search is True:
         es_query["query"] = {
