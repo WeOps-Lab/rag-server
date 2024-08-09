@@ -16,14 +16,19 @@ class ElasticSearchDeleteRunnable:
                                              basic_auth=("elastic", server_settings.elasticsearch_password))
             if req.mode == "delete_index":
                 es.indices.delete(index=req.index_name)
-            elif req.mode == "delete_document_by_knowledge_id":
+            if req.mode == "delete_docs":
+                metadata_filter = []
+                for key, value in req.metadata_filter.items():
+                    metadata_filter.append({"term": {f"metadata.{key}.keyword": value}})
+
                 query = {
                     "query": {
-                        "terms": {
-                            "metadata.knowledge_id": req.delete_knowledge_ids
+                        "bool": {
+                            "filter": metadata_filter
                         }
                     }
                 }
+
                 es.delete_by_query(index=req.index_name, body=query)
             return True
         except Exception as e:

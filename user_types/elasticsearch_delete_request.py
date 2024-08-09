@@ -4,6 +4,9 @@ from langserve import CustomUserType
 
 
 class ElasticSearchDeleteRequest(CustomUserType):
+    elasticsearch_url: str = "http://elasticsearch.ops-pilot:9200"
+    elasticsearch_password: str
+
     index_name: str
     mode: str = "delete_index"
-    delete_knowledge_ids: List[int] = []
+    metadata_filter: dict = {}
