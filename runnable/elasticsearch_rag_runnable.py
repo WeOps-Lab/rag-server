@@ -45,7 +45,7 @@ class ElasticSearchRagRunnable:
     def __init__(self):
         pass
 
-    def elasticsearch_rag_func(self, req: ElasticSearchRetrieverRequest) -> List[Document]:
+    def execute(self, req: ElasticSearchRetrieverRequest) -> List[Document]:
         vector_retriever = ElasticsearchRetriever.from_es_params(
             index_name=req.index_name,
             body_func=lambda x: vector_query(x, req),
@@ -71,7 +71,7 @@ class ElasticSearchRagRunnable:
         return result
 
     def instance(self):
-        elasticsearch_rag_runnable = RunnableLambda(self.elasticsearch_rag_func).with_types(
+        elasticsearch_rag_runnable = RunnableLambda(self.execute).with_types(
             input_type=ElasticSearchRetrieverRequest,
             output_type=List[Document])
         return elasticsearch_rag_runnable
