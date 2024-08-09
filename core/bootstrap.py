@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from runnable.elasticsearch_delete_runnable import ElasticSearchDeleteRunnable
 from runnable.elasticsearch_index_runnable import ElasticSearchIndexRunnable
 from runnable.elasticsearch_rag_runnable import ElasticSearchRagRunnable
 from runnable.online_search_runnable import OnlineSearchRagRunnable
@@ -30,7 +29,6 @@ class Bootstrap:
     def setup_router(self):
         add_routes(self.app, ElasticSearchIndexRunnable().instance(), path='/elasticsearch_index')
         add_routes(self.app, ElasticSearchRagRunnable().instance(), path='/elasticsearch_rag')
-        add_routes(self.app, ElasticSearchDeleteRunnable().instance(), path='/elasticsearch_delete')
         add_routes(self.app, OnlineSearchRagRunnable().instance(), path='/online_search')
 
     def start(self):

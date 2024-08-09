@@ -5,7 +5,6 @@ from langchain_core.runnables import RunnableLambda
 from langchain_elasticsearch import ElasticsearchRetriever
 from langserve import RemoteRunnable
 
-from core.server_settings import server_settings
 from embedding.remote_embeddings import RemoteEmbeddings
 from user_types.elasticsearch_retriever_request import ElasticSearchRetrieverRequest
 
@@ -46,14 +45,14 @@ class ElasticSearchRagRunnable:
     def __init__(self):
         pass
 
-    def execute(self, req: ElasticSearchRetrieverRequest) -> List[Document]:
+    def elasticsearch_rag_func(self, req: ElasticSearchRetrieverRequest) -> List[Document]:
         vector_retriever = ElasticsearchRetriever.from_es_params(
             index_name=req.index_name,
             body_func=lambda x: vector_query(x, req),
             content_field="text",
-            url=server_settings.elasticsearch_url,
+            url=req.elasticsearch_url,
             username="elastic",
-            password=server_settings.elasticsearch_password,
+            password=req.elasticsearch_password,
         )
         if req.enable_rerank is False:
             result = vector_retriever.invoke(req.search_query)
@@ -72,7 +71,7 @@ class ElasticSearchRagRunnable:
         return result
 
     def instance(self):
-        elasticsearch_rag_runnable = RunnableLambda(self.execute).with_types(
+        elasticsearch_rag_runnable = RunnableLambda(self.elasticsearch_rag_func).with_types(
             input_type=ElasticSearchRetrieverRequest,
             output_type=List[Document])
         return elasticsearch_rag_runnable
