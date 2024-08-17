@@ -1,5 +1,7 @@
 from typing import Dict, List
 
+from langchain.chains.hyde.base import HypotheticalDocumentEmbedder
+from langchain_community.chat_models import ChatOpenAI
 from langchain_core.documents import Document
 from langchain_core.runnables import RunnableLambda
 from langchain_elasticsearch import ElasticsearchRetriever
@@ -7,6 +9,7 @@ from langserve import RemoteRunnable
 from embedding.remote_embeddings import RemoteEmbeddings
 from user_types.elasticsearch_retriever_request import ElasticSearchRetrieverRequest
 from loguru import logger
+
 
 def vector_query(
         self,
@@ -31,7 +34,23 @@ def vector_query(
 
     if req.enable_vector_search is True:
         embedding = RemoteEmbeddings(req.embed_model_address)
-        vector = embedding.embed_query(req.search_query)
+        if req.enable_hyde_enhance is True:
+            hyde_llm = ChatOpenAI(
+                openai_api_key=req.hyde_enhance_api_key,
+                openai_api_base=req.hyde_enhance_base_url,
+                temperature=req.hyde_enhance_temperature,
+                model=req.hyde_enhance_model,
+                max_retries=3,
+            )
+            hyde_embeddings = HypotheticalDocumentEmbedder.from_llm(
+                hyde_llm,
+                base_embeddings=embedding,
+                prompt_key="web_search",
+            )
+            vector = hyde_embeddings.embed_query(req.search_query)
+        else:
+            vector = embedding.embed_query(req.search_query)
+
         es_query["knn"] = {
             "field": "vector",
             "query_vector": vector,
@@ -68,6 +87,11 @@ class ElasticSearchRagRunnable:
                 "top_n": req.rerank_top_k
             }
             search_result = reranker.invoke(params)
+
+
+        for doc in search_result:
+            if 'vector' in doc.metadata['_source']:
+                del doc.metadata['_source']['vector']
 
         return search_result
 
