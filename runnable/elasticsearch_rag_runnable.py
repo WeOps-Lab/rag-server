@@ -21,7 +21,15 @@ def vector_query(
 
     metadata_filter = []
     for key, value in req.metadata_filter.items():
-        metadata_filter.append({"term": {f"metadata.{key}.keyword": value}})
+        if isinstance(value, str):
+            metadata_filter.append({"term": {f"metadata.{key}.keyword": value}})
+        elif isinstance(value, bool):
+            metadata_filter.append({"term": {f"metadata.{key}": value}})
+        elif isinstance(value, (int, float)):
+            metadata_filter.append({"term": {f"metadata.{key}": value}})
+        else:
+            raise ValueError(f"Unsupported metadata filter type for key {key}: {type(value)}")
+
 
     if req.enable_term_search is True:
         es_query["query"] = {
