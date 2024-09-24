@@ -34,7 +34,7 @@ def vector_query(
     if req.enable_term_search is True:
         es_query["query"] = {
             "bool": {
-                "must": {"match": {"text": req.search_query}},
+                "must": {"match_phrase": {"text": req.search_query}},
                 "filter": metadata_filter,
                 "boost": req.text_search_weight,
             }
