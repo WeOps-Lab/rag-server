@@ -9,6 +9,7 @@ class ElasticSearchRetrieverRequest(ElasticSearchRequest):
 
     enable_term_search: bool = True
     text_search_weight: float = 0.9
+    text_search_mode: str = 'match'
 
     enable_vector_search: bool = True
     vector_search_weight: float = 0.1

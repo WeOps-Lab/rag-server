@@ -30,11 +30,10 @@ def vector_query(
         else:
             raise ValueError(f"Unsupported metadata filter type for key {key}: {type(value)}")
 
-
     if req.enable_term_search is True:
         es_query["query"] = {
             "bool": {
-                "must": {"match_phrase": {"text": req.search_query}},
+                "must": {req.text_search_mode: {"text": req.search_query}},
                 "filter": metadata_filter,
                 "boost": req.text_search_weight,
             }
@@ -95,7 +94,6 @@ class ElasticSearchRagRunnable:
                 "top_n": req.rerank_top_k
             }
             search_result = reranker.invoke(params)
-
 
         for doc in search_result:
             if 'vector' in doc.metadata['_source']:
